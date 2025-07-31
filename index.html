@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Notes</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #2c3e50;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #34495e;
+    }
+    .note {
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fdfdfd;
+    }
+    .note h2 {
+      margin: 0 0 10px;
+      color: #34495e;
+    }
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    ul li {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Task Notes</h1>
+    <input id="noteTitle" placeholder="Note title...">
+    <textarea id="noteTask" placeholder="Add task (one per line)..."></textarea>
+    <button onclick="addNote()">Add Note</button>
+    <div id="notesContainer"></div>
+  </div>
+
+  <script>
+    const notesContainer = document.getElementById('notesContainer');
+    const storedNotes = JSON.parse(localStorage.getItem('taskNotes')) || [];
+
+    function saveNotes() {
+      localStorage.setItem('taskNotes', JSON.stringify(storedNotes));
+    }
+
+    function renderNotes() {
+      notesContainer.innerHTML = '';
+      storedNotes.forEach((note, index) => {
+        const noteEl = document.createElement('div');
+        noteEl.className = 'note';
+
+        const title = document.createElement('h2');
+        title.textContent = note.title;
+        noteEl.appendChild(title);
+
+        const ul = document.createElement('ul');
+        note.tasks.forEach(task => {
+          const li = document.createElement('li');
+          li.textContent = task;
+          ul.appendChild(li);
+        });
+
+        noteEl.appendChild(ul);
+        notesContainer.appendChild(noteEl);
+      });
+    }
+
+    function addNote() {
+      const title = document.getElementById('noteTitle').value.trim();
+      const taskText = document.getElementById('noteTask').value.trim();
+
+      if (!title || !taskText) return alert('Please fill in both fields.');
+
+      const tasks = taskText.split('\n').map(t => t.trim()).filter(Boolean);
+      storedNotes.push({ title, tasks });
+      saveNotes();
+      renderNotes();
+
+      document.getElementById('noteTitle').value = '';
+      document.getElementById('noteTask').value = '';
+    }
+
+    renderNotes();
+  </script>
+</body>
+</html>
