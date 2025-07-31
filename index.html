@@ -19,6 +19,7 @@
       background: white;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
       border-radius: 12px;
+      box-sizing: border-box;
     }
     h1 {
       text-align: center;
@@ -27,6 +28,7 @@
     }
     input, textarea, button {
       width: 100%;
+      box-sizing: border-box;
       padding: 12px;
       margin-top: 10px;
       margin-bottom: 20px;
@@ -50,9 +52,10 @@
       border-radius: 10px;
       background: #fdfdfd;
     }
-    .note h2 {
+    .note h2[contenteditable] {
       margin: 0 0 10px;
       color: #34495e;
+      outline: none;
     }
     ul {
       margin: 0;
@@ -60,6 +63,17 @@
     }
     ul li {
       margin-bottom: 6px;
+    }
+    ul li[contenteditable] {
+      outline: none;
+    }
+    .add-task-input {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .add-task-input input {
+      flex: 1;
     }
   </style>
 </head>
@@ -74,7 +88,7 @@
 
   <script>
     const notesContainer = document.getElementById('notesContainer');
-    const storedNotes = JSON.parse(localStorage.getItem('taskNotes')) || [];
+    let storedNotes = JSON.parse(localStorage.getItem('taskNotes')) || [];
 
     function saveNotes() {
       localStorage.setItem('taskNotes', JSON.stringify(storedNotes));
@@ -88,16 +102,46 @@
 
         const title = document.createElement('h2');
         title.textContent = note.title;
+        title.contentEditable = true;
+        title.addEventListener('input', () => {
+          storedNotes[index].title = title.textContent;
+          saveNotes();
+        });
         noteEl.appendChild(title);
 
         const ul = document.createElement('ul');
-        note.tasks.forEach(task => {
+        note.tasks.forEach((task, taskIndex) => {
           const li = document.createElement('li');
           li.textContent = task;
+          li.contentEditable = true;
+          li.addEventListener('input', () => {
+            storedNotes[index].tasks[taskIndex] = li.textContent;
+            saveNotes();
+          });
           ul.appendChild(li);
         });
-
         noteEl.appendChild(ul);
+
+        const taskInputWrapper = document.createElement('div');
+        taskInputWrapper.className = 'add-task-input';
+
+        const newTaskInput = document.createElement('input');
+        newTaskInput.placeholder = 'Add new task...';
+
+        const addTaskBtn = document.createElement('button');
+        addTaskBtn.textContent = '+';
+        addTaskBtn.onclick = () => {
+          const newTask = newTaskInput.value.trim();
+          if (!newTask) return;
+          storedNotes[index].tasks.push(newTask);
+          saveNotes();
+          renderNotes();
+        };
+
+        taskInputWrapper.appendChild(newTaskInput);
+        taskInputWrapper.appendChild(addTaskBtn);
+        noteEl.appendChild(taskInputWrapper);
+
         notesContainer.appendChild(noteEl);
       });
     }
